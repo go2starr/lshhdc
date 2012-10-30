@@ -129,9 +129,11 @@ def hshingle(s, k):
         yield hash(s)
 
 def jaccard_sim(X, Y):
+    """Jaccard similarity between two sets"""
     x = set(X)
     y = set(Y)
     return float(len(x & y)) / len(x | y)
 
 def jaccard_dist(X, Y):
+    """Jaccard distance between two sets"""
     return 1 - jaccard_sim(X, Y)
