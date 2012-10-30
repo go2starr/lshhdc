@@ -28,7 +28,7 @@ class MinHashSignature(Signature):
     def hash_functions(self):
         """Return dim different hash functions"""
         def hash_factory(n):
-            return lambda x: hash(str(n) + str(x) + "salt")
+            return lambda x: hash("salt" + str(n) + str(x) + "salt")
         return [ hash_factory(_) for _ in range(self.dim) ]
     
     def sign(self, s):
@@ -93,7 +93,7 @@ class Cluster:
     def __init__(self, width=10, threshold=0.5):
         self.width = width
         self.unionfind = UnionFind()
-        self.signer = Signature(width)
+        self.signer = MinHashSignature(width)
         self.hasher = LSH(width, threshold)
         self.hashmap = {}
 
@@ -124,7 +124,7 @@ def shingle(s, k):
         yield s[i:i+k]
 
 def hshingle(s, k):
-    """Generate k-length shingles of s into m buckets"""
+    """Generate k-length shingles then hash"""
     for s in shingle(s, k):
         yield hash(s)
 
@@ -135,53 +135,3 @@ def jaccard_sim(X, Y):
 
 def jaccard_dist(X, Y):
     return 1 - jaccard_sim(X, Y)
-
-# myset = [
-#     (1,2,3,4,6),                  # 
-#     (1,2,3,4,5)                 # 4 / 6 = 75
-#     ]
-
-# N = 100
-# K = 1
-# T = 0.70
-
-# clusterer = Cluster(N, T)
-
-# print "True threshold: %f" % clusterer.hasher.get_threshold()
-# print clusterer.hasher.bandwidth
-
-# for s in myset:
-#     clusterer.add_set(s, "".join(str(_) for _ in s))
-
-# for s in clusterer.get_sets():
-#     print s
-
-# if __name__ == "__main__":
-#     # Run some tests :)
-#     N = 1000
-#     thresholds = [ 0.25, 0.50 ] 
-#     trials = 10
-#     setwidth = 10
-#     setmax = 100
-    
-#     import random
-    
-#     def randset(setmax, setwidth):
-#         return tuple( random.choice(range(setmax)) for _ in range(setwidth) )
-    
-#     for n in range(1, 100, 10):
-#         err = 0
-#         for trial in range(trials):
-#             x = randset(setmax, setwidth)
-#             y = randset(setmax, setwidth)
-#             sim = jaccard_sim(x, y)
-            
-#             for threshold in range(1, 100):
-#                 threshold = float(threshold) / 100
-#                 clusterer = ClusterFuck(n, threshold)
-#                 clusterer.add_set(x)
-#                 clusterer.add_set(y)
-#                 if len(clusterer.get_sets()) == 2:
-#                     err += abs(sim - threshold)
-#                     break
-#         print "%d: %f" % (n, 100 * err / trials)
