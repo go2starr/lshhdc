@@ -4,6 +4,7 @@ lsh.py
 Algorithms based on 'Mining of Massive Datasets'
 """
 from unionfind import UnionFind
+from collections import defaultdict
 
 
 class Signature:
@@ -30,13 +31,13 @@ class MinHashSignature(Signature):
         def hash_factory(n):
             return lambda x: hash("salt" + str(n) + str(x) + "salt")
         return [ hash_factory(_) for _ in range(self.dim) ]
-    
+
     def sign(self, s):
         """Returns minhash signature for set s"""
         sig = [ float("inf") ] * self.dim
         for hash_ix, hash_fn in enumerate(self.hashes):
             sig[hash_ix] = min(hash_fn(value) for value in s)
-        return sig        
+        return sig
 
 
 class LSH:
@@ -51,17 +52,17 @@ class LSH:
         """Generate hashvals for this signature"""
         for band in zip(*(iter(sig),) * self.bandwidth):
             yield hash("salt" + str(band) + "tlas")
-        
+
     def get_bandwidth(self, n, t):
         """Approximates the bandwidth (number of rows in each band)
-        needed to get threshold.  
-        
+        needed to get threshold.
+
         Threshold t = (1/b) ** (1/r) where
         b = #bands
         r = #rows per band
         n = b * r = #elements in signature
         """
-        
+
         best = n, 1
         minerr  = float("inf")
         for r in range(1, n + 1):
@@ -80,6 +81,9 @@ class LSH:
         b = self.length / r
         return (1. / b) ** (1. / r)
 
+    def get_n_bands(self):
+        return int(self.length / self.bandwidth)
+
 
 class Cluster:
     """Clusters sets with Jaccard similarity above threshold with high
@@ -95,7 +99,8 @@ class Cluster:
         self.unionfind = UnionFind()
         self.signer = MinHashSignature(width)
         self.hasher = LSH(width, threshold)
-        self.hashmap = {}
+        self.hashmaps = [defaultdict(list)
+                         for _ in range(self.hasher.get_n_bands())]
 
     def add_set(self, s, label=None):
         # A label for this set
@@ -108,15 +113,15 @@ class Cluster:
         # Get signature
         sig = self.signer.sign(s)
 
-        # Union labels with same LSH keys
-        for hshval in self.hasher.hash(sig):
-            self.hashmap.setdefault(hshval, []).append(label)
-            self.unionfind.union(label, self.hashmap[hshval][0])
+        # Union labels with same LSH key in same band
+        for band_idx, hshval in enumerate(self.hasher.hash(sig)):
+            self.hashmaps[band_idx][hshval].append(label)
+            self.unionfind.union(label, self.hashmaps[band_idx][hshval][0])
 
     def get_sets(self):
         return self.unionfind.sets()
 
-    
+
 def shingle(s, k):
     """Generate k-length shingles of string s"""
     k = min(len(s), k)
