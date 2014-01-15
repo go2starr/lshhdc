@@ -8,6 +8,8 @@ http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/215912
 with significant additional changes by D. Eppstein.
 """
 
+from collections import defaultdict
+
 class UnionFind:
     """Union-find data structure.
 
@@ -49,7 +51,7 @@ class UnionFind:
         for ancestor in path:
             self.parents[ancestor] = root
         return root
-        
+
     def __iter__(self):
         """Iterate through all items ever found or unioned by this structure."""
         return iter(self.parents)
@@ -65,8 +67,17 @@ class UnionFind:
 
     def sets(self):
         """Return a list of each disjoint set"""
-        ret = {}
-        for k, v in self.parents.iteritems():
-            ret.setdefault(v, []).append(k)
+        ret = defaultdict(list)
+        for k, _ in self.parents.iteritems():
+            ret[self[k]].append(k)
         return ret.values()
 
+    
+if __name__ == '__main__':
+
+    # test
+    uf = UnionFind()
+    uf.union(0, 1)
+    uf.union(2, 3)
+    uf.union(3, 0)
+    assert uf.sets() == [[0, 1, 2, 3]]
