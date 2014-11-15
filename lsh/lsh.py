@@ -31,7 +31,7 @@ class MinHashSignature(Signature):
     def hash_functions(self):
         """Return dim different hash functions"""
         def hash_factory(n):
-            return lambda x: hash("salt" + str(n) + str(x) + "salt")
+            return lambda x: hash("salt" + unicode(n) + unicode(x) + "salt")
         return [ hash_factory(_) for _ in range(self.dim) ]
 
     def sign(self, s):
@@ -53,7 +53,7 @@ class LSH(object):
     def hash(self, sig):
         """Generate hashvals for this signature"""
         for band in zip(*(iter(sig),) * self.bandwidth):
-            yield hash("salt" + str(band) + "tlas")
+            yield hash("salt" + unicode(band) + "tlas")
 
     def get_bandwidth(self, n, t):
         """Approximates the bandwidth (number of rows in each band)
