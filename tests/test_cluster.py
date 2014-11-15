@@ -1,5 +1,7 @@
-from utils import *
-from ..lsh import Cluster, jaccard_sim
+from lsh import Cluster, jaccard_sim
+
+from .utils import *
+
 
 def test_same_set():
     """A set should be clustered with itself"""
@@ -29,13 +31,13 @@ def test_cluster_threshold():
     n_tests = 50
     dim = 15
     expected_error = 0.20
-    
+
     tot_err = 0
     for test in range(n_tests):
         # Get some sets and their similarities
         sets = (randset(), randset())
         jsim = jaccard_sim(*sets)
-        
+
         # Find the threshold at which they cluster together
         for threshold in range(1, 100, 5):
             threshold = float(threshold) / 100
