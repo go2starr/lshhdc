@@ -1,9 +1,10 @@
 import itertools
-
 from math import sqrt
 
-from utils import *
-from ..lsh import MinHashSignature, jaccard_sim
+from lsh import MinHashSignature, jaccard_sim
+
+from .utils import *
+
 
 def test_signature_length():
     """Signatures should have correct dimension"""
@@ -11,11 +12,13 @@ def test_signature_length():
     mh = MinHashSignature(dim)
     assert dim == len(mh.sign(randset()))
 
+
 def test_consistent_signature():
     """Signatures should be consistent"""
     mh = MinHashSignature(100)
     s = randset()
     assert mh.sign(s) == mh.sign(s)
+
 
 def test_signature_similarity():
     """The probability that two sets' signatures match at some index

@@ -3,11 +3,13 @@ lsh.py
 
 Algorithms based on 'Mining of Massive Datasets'
 """
-from unionfind import UnionFind
+
 from collections import defaultdict
 
+from .unionfind import UnionFind
 
-class Signature:
+
+class Signature(object):
     """Signature Base class."""
 
     def __init__(self, dim):
@@ -29,7 +31,7 @@ class MinHashSignature(Signature):
     def hash_functions(self):
         """Return dim different hash functions"""
         def hash_factory(n):
-            return lambda x: hash("salt" + str(n) + str(x) + "salt")
+            return lambda x: hash("salt" + unicode(n) + unicode(x) + "salt")
         return [ hash_factory(_) for _ in range(self.dim) ]
 
     def sign(self, s):
@@ -40,7 +42,7 @@ class MinHashSignature(Signature):
         return sig
 
 
-class LSH:
+class LSH(object):
     """Locality sensitive hashing.  Uses a banding approach to hash
     similar signatures to the same buckets."""
     def __init__(self, length, threshold):
@@ -51,7 +53,7 @@ class LSH:
     def hash(self, sig):
         """Generate hashvals for this signature"""
         for band in zip(*(iter(sig),) * self.bandwidth):
-            yield hash("salt" + str(band) + "tlas")
+            yield hash("salt" + unicode(band) + "tlas")
 
     def get_bandwidth(self, n, t):
         """Approximates the bandwidth (number of rows in each band)
@@ -85,7 +87,7 @@ class LSH:
         return int(self.length / self.bandwidth)
 
 
-class Cluster:
+class Cluster(object):
     """Clusters sets with Jaccard similarity above threshold with high
     probability.
 
@@ -128,16 +130,19 @@ def shingle(s, k):
     for i in range(len(s) - k + 1):
         yield s[i:i+k]
 
+
 def hshingle(s, k):
     """Generate k-length shingles then hash"""
     for s in shingle(s, k):
         yield hash(s)
+
 
 def jaccard_sim(X, Y):
     """Jaccard similarity between two sets"""
     x = set(X)
     y = set(Y)
     return float(len(x & y)) / len(x | y)
+
 
 def jaccard_dist(X, Y):
     """Jaccard distance between two sets"""
